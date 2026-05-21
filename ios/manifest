@@ -1,0 +1,19 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0.0
+apiversion: 2
+architectures: arm64 x86_64
+mac: false
+description: Ti.SafariView
+author: Douglas Alves
+license: MIT
+copyright: Copyright (c) 2026 by Upflix
+
+# these should not be edited
+name: Ti.SafariView
+moduleid: ti.safariview
+guid: c4b0685c-e63b-46b2-ab77-0c0f160e21f4
+platform: iphone
+minsdk: 13.2.0.GA

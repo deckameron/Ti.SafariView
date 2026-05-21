@@ -1,0 +1,147 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "TiSafariview",
+    "printedName": "TiSafariview",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "TitaniumKit",
+        "printedName": "TitaniumKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      },
+      {
+        "kind": "Import",
+        "name": "SafariServices",
+        "printedName": "SafariServices",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      },
+      {
+        "kind": "Import",
+        "name": "TitaniumKit",
+        "printedName": "TitaniumKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "SafariServices",
+        "printedName": "SafariServices",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      },
+      {
+        "kind": "Import",
+        "name": "TitaniumKit",
+        "printedName": "TitaniumKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "AuthenticationServices",
+        "printedName": "AuthenticationServices",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": [
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "StringLiteral",
+      "offset": 879,
+      "length": 13,
+      "value": "\"Hello World\""
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2307,
+      "length": 2,
+      "value": "-2"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2377,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2446,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2515,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2584,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2653,
+      "length": 1,
+      "value": "5"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2725,
+      "length": 1,
+      "value": "6"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewSafariViewProxy.swift",
+      "kind": "BooleanLiteral",
+      "offset": 478,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewSafariViewProxy.swift",
+      "kind": "BooleanLiteral",
+      "offset": 527,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewAuthSessionProxy.swift",
+      "kind": "BooleanLiteral",
+      "offset": 846,
+      "length": 5,
+      "value": "false"
+    }
+  ]
+}

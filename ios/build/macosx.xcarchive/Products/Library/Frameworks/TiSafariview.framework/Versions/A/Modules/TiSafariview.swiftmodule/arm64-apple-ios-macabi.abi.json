@@ -1,0 +1,53 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "TiSafariview",
+    "printedName": "TiSafariview",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "TitaniumKit",
+        "printedName": "TitaniumKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      },
+      {
+        "kind": "Import",
+        "name": "UIKit",
+        "printedName": "UIKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "TitaniumKit",
+        "printedName": "TitaniumKit",
+        "declKind": "Import",
+        "moduleName": "TiSafariview"
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": [
+    {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
+      "kind": "StringLiteral",
+      "offset": 847,
+      "length": 13,
+      "value": "\"Hello World\""
+    }
+  ]
+}

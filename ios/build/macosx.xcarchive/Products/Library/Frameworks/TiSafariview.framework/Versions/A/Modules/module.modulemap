@@ -1,0 +1,10 @@
+framework module TiSafariview {
+  umbrella header "TiSafariview.h"
+  export *
+
+  module * { export * }
+}
+
+module TiSafariview.Swift {
+  header "TiSafariview-Swift.h"
+}
