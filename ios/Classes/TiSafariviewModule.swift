@@ -69,4 +69,12 @@ class TiSafariviewModule: TiModule {
     @objc var DISMISS_BUTTON_STYLE_CANCEL: Int {
         return SFSafariViewController.DismissButtonStyle.cancel.rawValue     // 2
     }
+    
+    // MARK: - Modal Styles
+    @objc var MODAL_PRESENTATION_FULL_SCREEN: Int { return 0 }
+    @objc var MODAL_PRESENTATION_PAGE_SHEET: Int { return 1 }
+    @objc var MODAL_PRESENTATION_FORM_SHEET: Int { return 2 }
+    @objc var MODAL_PRESENTATION_CURRENT_CONTEXT: Int { return 3 }
+    @objc var MODAL_PRESENTATION_OVER_FULL_SCREEN: Int { return 5 }
+    @objc var MODAL_PRESENTATION_OVER_CURRENT_CONTEXT: Int { return 6 }
 }

@@ -11,13 +11,10 @@ import TitaniumKit
 import SafariServices
 
 @objc(TiSafariviewSafariViewProxy)
-class TiSafariviewSafariViewProxy: TiWindowProxy {
-
-    // MARK: - Private State
+class TiSafariviewSafariViewProxy: TiProxy {
 
     private var safariVC: SFSafariViewController?
-
-    // MARK: - JS-accessible Properties
+    private var containerVC: UIViewController?
 
     @objc var url: String?
     @objc var entersReaderIfAvailable: Bool = false
@@ -25,81 +22,113 @@ class TiSafariviewSafariViewProxy: TiWindowProxy {
     @objc var preferredBarTintColor: Any?
     @objc var preferredControlTintColor: Any?
     @objc var dismissButtonStyle: Int = SFSafariViewController.DismissButtonStyle.done.rawValue
+    @objc var activityButton: TiViewProxy?
+    
+    // default: 0 = UIModalPresentationStyle.fullScreen
+    @objc var modalPresentationStyle: Int = 0
 
-    // MARK: - TiWindowProxy Lifecycle
+    // MARK: - Public Methods
 
-    override func windowWillOpen() {
-        super.windowWillOpen()
-        guard let urlString = url, URL(string: urlString) != nil else {
+    @objc(open:)
+    func open(_ args: [Any]?) {
+        guard let urlString = url, let url = URL(string: urlString) else {
             throwException(
                 "Ti.SafariView: URL inválida ou não definida.",
-                subreason: "Defina a propriedade 'url' antes de abrir a window.",
+                subreason: "Defina a propriedade 'url' antes de chamar open().",
                 location: CODELOCATION
             )
             return
         }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let config = SFSafariViewController.Configuration()
+            config.entersReaderIfAvailable = self.entersReaderIfAvailable
+            config.barCollapsingEnabled = self.barCollapsingEnabled
+
+            let vc = SFSafariViewController(url: url, configuration: config)
+            vc.delegate = self
+
+            if let color = self.resolveColor(from: self.preferredBarTintColor) {
+                vc.preferredBarTintColor = color
+            }
+            if let color = self.resolveColor(from: self.preferredControlTintColor) {
+                vc.preferredControlTintColor = color
+            }
+            if let style = SFSafariViewController.DismissButtonStyle(rawValue: self.dismissButtonStyle) {
+                vc.dismissButtonStyle = style
+            }
+
+            self.safariVC = vc
+            
+            if let style = UIModalPresentationStyle(rawValue: modalPresentationStyle) {
+                vc.modalPresentationStyle = style
+            }
+
+            guard let presenter = topMostViewController() else { return }
+            
+            presenter.present(vc, animated: true) { [weak self, weak vc] in
+                guard let self = self, let vc = vc else { return }
+
+                if let buttonProxy = self.activityButton {
+                    self.addCustomButton(buttonProxy, over: vc.view)
+                }
+
+                self.fireEvent("open", with: nil)
+            }
+        }
     }
 
-    override func windowDidOpen() {
-        super.windowDidOpen()
-        embedSafariVC()
-        fireEvent("open", with: nil)
-    }
-    
-    override func windowWillClose() {
-        // Cleanup do child VC antes do Titanium fechar a window
-        safariVC?.willMove(toParent: nil)
-        safariVC?.view.removeFromSuperview()
-        safariVC?.removeFromParent()
-        safariVC = nil
-
-        super.windowWillClose()
+    @objc(close:)
+    func close(_ args: [Any]?) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let vc = self.safariVC else { return }
+            self.activityButton?.view?.removeFromSuperview()
+            vc.dismiss(animated: true)
+            self.safariVC = nil
+        }
     }
 
-    // MARK: - Private
+    // MARK: - Floating Button
 
-    private func embedSafariVC() {
-        guard let urlString = url,
-              let url = URL(string: urlString),
-              let hostVC = topMostViewController() else { return }
+    private func addCustomButton(_ proxy: TiViewProxy, over parentView: UIView) {
+        guard let buttonView = proxy.view else { return }
 
-        let config = SFSafariViewController.Configuration()
-        config.entersReaderIfAvailable = entersReaderIfAvailable
-        config.barCollapsingEnabled = barCollapsingEnabled
+        buttonView.translatesAutoresizingMaskIntoConstraints = false
+        parentView.addSubview(buttonView)
 
-        let vc = SFSafariViewController(url: url, configuration: config)
-        vc.delegate = self
+        let guide = parentView.safeAreaLayoutGuide
+        var constraints: [NSLayoutConstraint] = []
 
-        if let color = resolveColor(from: preferredBarTintColor) {
-            vc.preferredBarTintColor = color
+        if let v = tiFloat(proxy, key: "left") {
+            constraints.append(buttonView.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: v))
         }
-        if let color = resolveColor(from: preferredControlTintColor) {
-            vc.preferredControlTintColor = color
+        if let v = tiFloat(proxy, key: "right") {
+            constraints.append(buttonView.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -v))
         }
-        if let style = SFSafariViewController.DismissButtonStyle(rawValue: dismissButtonStyle) {
-            vc.dismissButtonStyle = style
+        if let v = tiFloat(proxy, key: "top") {
+            constraints.append(buttonView.topAnchor.constraint(equalTo: guide.topAnchor, constant: v))
+        }
+        if let v = tiFloat(proxy, key: "bottom") {
+            constraints.append(buttonView.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -v))
+        }
+        if let v = tiFloat(proxy, key: "width") {
+            constraints.append(buttonView.widthAnchor.constraint(equalToConstant: v))
+        }
+        if let v = tiFloat(proxy, key: "height") {
+            constraints.append(buttonView.heightAnchor.constraint(equalToConstant: v))
         }
 
-        hostVC.addChild(vc)
-        vc.view.frame = hostVC.view.bounds
-        vc.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        hostVC.view.addSubview(vc.view)
-        vc.didMove(toParent: hostVC)
+        NSLayoutConstraint.activate(constraints)
+    }
 
-        safariVC = vc
+    private func tiFloat(_ proxy: TiViewProxy, key: String) -> CGFloat? {
+        guard let value = proxy.value(forKey: key) as? NSNumber else { return nil }
+        return CGFloat(value.floatValue)
     }
 
     // MARK: - Helpers
-
-    private func resolveColor(from value: Any?) -> UIColor? {
-        if let tiColor = value as? TiColor {
-            return tiColor.color
-        }
-        if let str = value as? String {
-            return TiUtils.colorValue(str)?.color
-        }
-        return nil
-    }
 
     private func topMostViewController() -> UIViewController? {
         guard let root = TiApp.controller() else { return nil }
@@ -107,16 +136,35 @@ class TiSafariviewSafariViewProxy: TiWindowProxy {
     }
 
     private func findTopViewController(_ vc: UIViewController) -> UIViewController {
-        if let presented = vc.presentedViewController {
-            return findTopViewController(presented)
-        }
-        if let nav = vc as? UINavigationController {
-            return findTopViewController(nav.visibleViewController ?? nav)
-        }
-        if let tab = vc as? UITabBarController {
-            return findTopViewController(tab.selectedViewController ?? tab)
-        }
+        if let presented = vc.presentedViewController { return findTopViewController(presented) }
+        if let nav = vc as? UINavigationController { return findTopViewController(nav.visibleViewController ?? nav) }
+        if let tab = vc as? UITabBarController { return findTopViewController(tab.selectedViewController ?? tab) }
         return vc
+    }
+
+    private func resolveColor(from value: Any?) -> UIColor? {
+        if let tiColor = value as? TiColor { return tiColor.color }
+        if let str = value as? String { return TiUtils.colorValue(str)?.color }
+        return nil
+    }
+    
+    private class SafariBrowserContainer: UIViewController {
+
+        var onDidAppear: (() -> Void)?
+
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            onDidAppear?()
+        }
+
+        // Repassa preferências de apresentação para o filho
+        override var childForStatusBarStyle: UIViewController? {
+            return children.first
+        }
+
+        override var childForStatusBarHidden: UIViewController? {
+            return children.first
+        }
     }
 }
 
@@ -124,22 +172,23 @@ class TiSafariviewSafariViewProxy: TiWindowProxy {
 
 extension TiSafariviewSafariViewProxy: SFSafariViewControllerDelegate {
 
-    /// Usuário fechou manualmente via botão Done/Close/Cancel ou swipe down
     func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        activityButton?.view?.removeFromSuperview()
+        safariVC = nil
         fireEvent("close", with: ["userInitiated": true])
-        // Propaga o fechamento para o Titanium (tab/navGroup/modal)
-        self.close(nil)
     }
 
-    /// Carregamento inicial completou
     func safariViewController(
         _ controller: SFSafariViewController,
         didCompleteInitialLoad didLoadSuccessfully: Bool
     ) {
+        if let buttonView = activityButton?.view {
+            buttonView.superview?.bringSubviewToFront(buttonView)
+        }
+
         fireEvent("load", with: ["success": didLoadSuccessfully])
     }
 
-    /// URL inicial redirecionou
     func safariViewController(
         _ controller: SFSafariViewController,
         initialLoadDidRedirectTo URL: URL

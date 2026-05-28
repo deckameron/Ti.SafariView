@@ -70,76 +70,76 @@
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "StringLiteral",
       "offset": 879,
-      "length": 13,
-      "value": "\"Hello World\""
+      "length": 15,
+      "value": "\"Ti.SafariView\""
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2307,
-      "length": 2,
-      "value": "-2"
-    },
-    {
-      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
-      "kind": "IntegerLiteral",
-      "offset": 2377,
+      "offset": 2278,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2446,
+      "offset": 2340,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2515,
+      "offset": 2402,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2584,
+      "offset": 2469,
       "length": 1,
       "value": "3"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2653,
+      "offset": 2537,
       "length": 1,
       "value": "5"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/Classes\/TiSafariviewModule.swift",
       "kind": "IntegerLiteral",
-      "offset": 2725,
+      "offset": 2609,
       "length": 1,
       "value": "6"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewSafariViewProxy.swift",
       "kind": "BooleanLiteral",
-      "offset": 478,
+      "offset": 448,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewSafariViewProxy.swift",
       "kind": "BooleanLiteral",
-      "offset": 527,
+      "offset": 497,
       "length": 4,
       "value": "true"
     },
     {
+      "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewSafariViewProxy.swift",
+      "kind": "IntegerLiteral",
+      "offset": 834,
+      "length": 1,
+      "value": "0"
+    },
+    {
       "filePath": "\/Users\/douglas\/Documents\/Modules\/Ti.SafariView\/ios\/TiSafariviewAuthSessionProxy.swift",
       "kind": "BooleanLiteral",
-      "offset": 846,
+      "offset": 543,
       "length": 5,
       "value": "false"
     }

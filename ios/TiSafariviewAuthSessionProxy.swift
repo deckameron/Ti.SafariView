@@ -15,23 +15,18 @@ class TiSafariviewAuthSessionProxy: TiProxy {
 
     // MARK: - Private State
 
-    // CRÍTICO: manter referência forte — sessão é cancelada se desalocada
     private var authSession: ASWebAuthenticationSession?
 
     // MARK: - JS-accessible Properties
 
-    /// URL de autenticação completa (incluindo redirect_uri, client_id, etc.)
     @objc var url: String?
 
-    /// Scheme do callback (ex: "myapp" para "myapp://oauth/callback")
     @objc var callbackURLScheme: String?
 
-    /// true = sessão privada sem cookies do Safari (default: false)
     @objc var prefersEphemeralWebBrowserSession: Bool = false
 
     // MARK: - Public Methods
 
-    /// Inicia a sessão de autenticação. Retorna true se iniciou com sucesso.
     @objc(start:)
     func start(_ args: [Any]?) {
         guard let urlString = url, let authURL = URL(string: urlString) else {
@@ -80,7 +75,6 @@ class TiSafariviewAuthSessionProxy: TiProxy {
         }
     }
 
-    /// Cancela a sessão em andamento.
     @objc(cancel:)
     func cancel(_ args: [Any]?) {
         DispatchQueue.main.async { [weak self] in
@@ -125,7 +119,6 @@ class TiSafariviewAuthSessionProxy: TiProxy {
             return
         }
 
-        // Parsear query params do callback para conveniência do dev
         let queryParams = parseQueryParams(from: callbackURL)
 
         fireEvent("complete", with: [

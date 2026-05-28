@@ -19,8 +19,8 @@ Ti.SafariView brings the full power of Safari into your Titanium app. Unlike Tit
 | Safe Browsing protection | ❌ | ✅ |
 | Host app cannot read browsing data | ❌ | ✅ (by design) |
 | Native progress bar & controls | ❌ | ✅ |
+| Custom floating action button | ❌ | ✅ |
 | OAuth / SSO flows | ❌ | ✅ (via ASWebAuthenticationSession) |
-| Opens as a Titanium Window | N/A | ✅ |
 
 ---
 
@@ -30,15 +30,17 @@ Ti.SafariView brings the full power of Safari into your Titanium app. Unlike Tit
 - [Quick Start](#quick-start)
 - [SafariView](#safariview)
   - [Properties](#properties)
-  - [Inherited Window Properties](#inherited-window-properties)
+  - [Methods](#methods)
   - [Events](#events)
   - [Presentation Styles](#presentation-styles)
+  - [Activity Button](#activity-button)
 - [AuthSession](#authsession)
   - [Properties](#authsession-properties)
   - [Methods](#authsession-methods)
   - [Events](#authsession-events)
 - [Constants](#constants)
 - [API Reference](#api-reference)
+- [Full Example](#full-example)
 - [License](#license)
 
 ---
@@ -69,30 +71,28 @@ Download the latest `.zip` from the [Releases page](https://github.com/deckamero
 ## Quick Start
 
 ```javascript
-const SafariView = require('ti.safariview');
+const SafariView = require('ti.safariview')
 
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
     preferredControlTintColor: '#FF3B30',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
-});
+})
 
 browser.addEventListener('load', e => {
     Ti.API.info('Loaded successfully: ' + e.success)
-});
+})
 
 browser.addEventListener('close', e => {
     Ti.API.info('Closed by user: ' + e.userInitiated)
-});
+})
 
-browser.open({ modal: true });
+browser.open()
 ```
 
 ---
 
 ## SafariView
-
-`SafariView` extends `TiWindowProxy`, which means it behaves like a native Titanium Window. You can open it modally, push it into a navigation stack, or open it inside a tab — using the exact same patterns you already know.
 
 ### Properties
 
@@ -103,7 +103,7 @@ The URL to load. Must be a valid `http://` or `https://` URL.
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com'
-});
+})
 ```
 
 ---
@@ -116,125 +116,120 @@ When `true`, Safari will automatically switch to Reader Mode if the page support
 const browser = SafariView.createSafariView({
     url: 'https://example.com/article',
     entersReaderIfAvailable: true,
-});
+})
 ```
 
 ---
 
 #### `barCollapsingEnabled` · Boolean · default: `true`
 
-When `true`, the address bar collapses as the user scrolls down, giving more screen space to content.
+When `true`, the address bar and toolbar collapse as the user scrolls down, giving more screen space to content.
+
+> ⚠️ **Only works with `MODAL_PRESENTATION_FULL_SCREEN`** (the default) and `MODAL_PRESENTATION_CURRENT_CONTEXT`** . In Page Sheet and Form Sheet the content does not fill the entire screen, so iOS disables bar collapsing automatically.
+
+> ⚠️ **Disable when using `activityButton`**. Since there is no event for when bars collapse, the floating button would remain visible while the bars are hidden. Set `barCollapsingEnabled: false` whenever an `activityButton` is present.
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
-    barCollapsingEnabled: false, // always visible bar
-});
+    barCollapsingEnabled: true, // only effective with MODAL_PRESENTATION_FULL_SCREEN
+})
 ```
 
 ---
 
 #### `preferredBarTintColor` · String (hex color)
 
-The background color of Safari's navigation bar. Accepts any hex color string.
+The background color of Safari's navigation bar and toolbar. Accepts any hex color string.
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
     preferredBarTintColor: '#1C1C1E',
-});
+})
 ```
 
 Also supports Titanium's semantic colors for Dark Mode compatibility:
 
 ```javascript
-preferredBarTintColor: Ti.UI.fetchSemanticColor('backgroundColor'),
+preferredBarTintColor: Ti.UI.fetchSemanticColor('navigationBarColor'),
 ```
 
 ---
 
 #### `preferredControlTintColor` · String (hex color)
 
-The color of the controls and buttons (back button, Done, share icon) inside Safari's navigation bar.
+The color of the controls and buttons (back, Done, share icon) inside Safari's navigation bar.
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
     preferredControlTintColor: '#FF3B30',
-});
+})
 ```
 
 ---
 
 #### `dismissButtonStyle` · Int · default: `DISMISS_BUTTON_STYLE_DONE`
 
-Controls the label of the dismiss button shown in the navigation bar. Use the module constants:
+Controls the label of the dismiss button. Use the module constants.
 
-| Constant | Button label |
-|---|---|
-| `SafariView.DISMISS_BUTTON_STYLE_DONE` | **Done** |
-| `SafariView.DISMISS_BUTTON_STYLE_CLOSE` | **Close** |
-| `SafariView.DISMISS_BUTTON_STYLE_CANCEL` | **Cancel** |
+| Constant | Button label | Best for |
+|---|---|---|
+| `DISMISS_BUTTON_STYLE_DONE` | **Done** | General browsing |
+| `DISMISS_BUTTON_STYLE_CLOSE` | **Close** | Articles, content |
+| `DISMISS_BUTTON_STYLE_CANCEL` | **Cancel** | Flows with clear intent (login, checkout) |
+
+> ⚠️ Apple does not allow customizing the dismiss button icon or using SF Symbols. Only these three are available.
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
-});
+})
 ```
 
 ---
 
-### Inherited Window Properties
+#### `modalPresentationStyle` · Int · default: `MODAL_PRESENTATION_FULL_SCREEN`
 
-Because `SafariView` extends `TiWindowProxy`, all standard Titanium Window properties work natively — no extra configuration needed.
-
-#### `modal` · Boolean
-
-Presents the browser as a modal sheet from the bottom.
-
-```javascript
-browser.open({
-  modal:  true,
-  modalTransitionStyle:  Titanium.UI.iOS.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
-  modalStyle:  Ti.UI.iOS.MODAL_PRESENTATION_FORMSHEET
-});
-```
-
-#### `fullscreen` · Boolean
-
-When `true`, the browser covers the entire screen including the status bar area.
+Controls how the browser is presented on screen. Use the module constants. See [Presentation Styles](#presentation-styles) for a full comparison.
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
-    fullscreen: true,
-});
-browser.open({ modal: true });
+    modalPresentationStyle: SafariView.MODAL_PRESENTATION_PAGE_SHEET,
+})
 ```
 
-#### `navBarHidden` · Boolean
+---
 
-Hides the Titanium navigation bar. Recommended when using `fullscreen: true` to avoid a double navigation bar.
+#### `activityButton` · TiViewProxy
+
+A native Titanium view (typically a `Ti.UI.Button`) that floats on top of the browser. Use the standard `left`, `right`, `top`, `bottom`, `width`, and `height` layout properties directly on the view proxy to control its position — they are read and translated to Auto Layout constraints automatically.
+
+See [Activity Button](#activity-button) for full usage.
+
+---
+
+### Methods
+
+#### `open()`
+
+Opens the browser.
 
 ```javascript
-const browser = SafariView.createSafariView({
-    url: 'https://example.com',
-    navBarHidden: true,
-    fullscreen: true,
-});
+browser.open()
 ```
 
-#### `backgroundColor` · String
+---
 
-The background color visible behind the browser while it loads. Setting this to the same color as `preferredBarTintColor` prevents a flash of white during initialization.
+#### `close()`
+
+Closes the browser programmatically.
 
 ```javascript
-const browser = SafariView.createSafariView({
-    url: 'https://example.com',
-    backgroundColor: '#1C1C1E',
-    preferredBarTintColor: '#1C1C1E',
-});
+browser.close()
 ```
 
 ---
@@ -243,19 +238,19 @@ const browser = SafariView.createSafariView({
 
 #### `open`
 
-Fired when the browser window has finished opening.
+Fired when the browser has finished opening.
 
 ```javascript
 browser.addEventListener('open', () => {
-    Ti.API.info('Browser is open');
-});
+    Ti.API.info('Browser is open')
+})
 ```
 
 ---
 
 #### `close`
 
-Fired when the browser window closes — either by the user tapping the dismiss button/swiping down, or programmatically via `browser.close()`.
+Fired when the browser closes — either by the user tapping the dismiss button/swiping down, or programmatically via `browser.close()`.
 
 | Property | Type | Description |
 |---|---|---|
@@ -264,16 +259,16 @@ Fired when the browser window closes — either by the user tapping the dismiss 
 ```javascript
 browser.addEventListener('close', e => {
     if (e.userInitiated) {
-        Ti.API.info('User dismissed the browser');
+        Ti.API.info('User dismissed the browser')
     }
-});
+})
 ```
 
 ---
 
 #### `load`
 
-Fired when the initial page load completes (success or failure).
+Fired when the initial page load completes.
 
 | Property | Type | Description |
 |---|---|---|
@@ -282,9 +277,9 @@ Fired when the initial page load completes (success or failure).
 ```javascript
 browser.addEventListener('load', e => {
     if (!e.success) {
-        Ti.API.error('Page failed to load');
+        Ti.API.error('Page failed to load')
     }
-});
+})
 ```
 
 ---
@@ -299,46 +294,54 @@ Fired when the initial URL redirects to another URL before the page loads.
 
 ```javascript
 browser.addEventListener('redirect', e => {
-    Ti.API.info('Redirected to: ' + e.url);
-});
+    Ti.API.info('Redirected to: ' + e.url)
+})
 ```
 
 ---
 
 ### Presentation Styles
 
-Because `SafariView` is a `TiWindowProxy`, you control presentation entirely through standard Titanium APIs — not through module-specific properties.
+The `modalPresentationStyle` property controls how the browser appears on screen.
 
-#### Full Screen (recommended for immersive content)
+| Constant | Value | Swipe to close | barCollapsingEnabled |
+|---|---|---|---|
+| `MODAL_PRESENTATION_FULL_SCREEN` | `0` | ❌ | ✅ |
+| `MODAL_PRESENTATION_PAGE_SHEET` | `1` | ✅ | ❌ |
+| `MODAL_PRESENTATION_FORM_SHEET` | `2` | ✅ | ❌ |
+| `MODAL_PRESENTATION_CURRENT_CONTEXT` | `3` | Depends on parent | ❌ |
+| `MODAL_PRESENTATION_OVER_FULL_SCREEN` | `5` | ❌ | ✅ |
+| `MODAL_PRESENTATION_OVER_CURRENT_CONTEXT` | `6` | Depends on parent | ❌ |
+
+**`FULL_SCREEN` vs `OVER_FULL_SCREEN`:** Both cover the entire screen. The difference is that `OVER_FULL_SCREEN` keeps the parent view controller in memory and visible underneath (useful for transparent backgrounds), while `FULL_SCREEN` deallocates it.
+
+**`CURRENT_CONTEXT` vs `OVER_CURRENT_CONTEXT`:** Same difference — `OVER_CURRENT_CONTEXT` keeps the parent VC in memory, `CURRENT_CONTEXT` does not.
+
+#### Full Screen (default)
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
-    navBarHidden: true,
-    backgroundColor: '#000000',
+    // MODAL_PRESENTATION_FULL_SCREEN is the default — no need to set
+    barCollapsingEnabled: true,
     preferredBarTintColor: '#000000',
     preferredControlTintColor: '#FFFFFF',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_DONE,
-});
-
-browser.open({ modal: true });
+})
+browser.open()
 ```
 
-#### Page Sheet (default iOS card style)
+#### Page Sheet (iOS card style)
 
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
+    modalPresentationStyle: SafariView.MODAL_PRESENTATION_PAGE_SHEET,
     preferredBarTintColor: '#1C1C1E',
-    preferredControlTintColor: '#007AFF',
+    preferredControlTintColor: '#FF3B30',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
-});
-
-browser.open({
-    modal: true,
-    modalTransitionStyle: Ti.UI.iOS.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
-    modalStyle: Ti.UI.iOS.MODAL_PRESENTATION_FORMSHEET,
-});
+})
+browser.open()
 ```
 
 #### Dark Mode Aware
@@ -346,12 +349,50 @@ browser.open({
 ```javascript
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
+    modalPresentationStyle: SafariView.MODAL_PRESENTATION_PAGE_SHEET,
     preferredBarTintColor: Ti.UI.fetchSemanticColor('navigationBarColor'),
     preferredControlTintColor: Ti.UI.fetchSemanticColor('accentColor'),
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
-});
+})
+browser.open()
+```
 
-browser.open({ modal: true });
+---
+
+### Activity Button
+
+You can place any Titanium view on top of the browser as a floating action button. This is useful for features like bookmarking, sharing, or any custom action.
+
+The button **always bookmarks or acts on the initial URL** passed to `createSafariView` — not the URL the user may have navigated to internally. This is by design: `SFSafariViewController` does not expose the current URL to the host app to protect user privacy.
+
+Use standard Titanium layout properties (`left`, `right`, `top`, `bottom`, `width`, `height`) on the button proxy to control its position. The button is anchored to the safe area, so `bottom: 20` correctly accounts for the home indicator on all iPhone models.
+
+> ⚠️ Set `barCollapsingEnabled: false` when using `activityButton`. There is no event for when the bars collapse, so the button would remain visible while the bars are hidden.
+
+```javascript
+const bookmarkBtn = Ti.UI.createButton({
+    image: '/images/bookmark.png',
+    width: 52,
+    height: 52,
+    bottom: 20,
+    right: 20,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 26,
+})
+
+bookmarkBtn.addEventListener('click', () => {
+    saveBookmark(browser.url) // browser.url = the initial URL
+    bookmarkBtn.image = '/images/bookmark_filled.png'
+})
+
+const browser = SafariView.createSafariView({
+    url: 'https://example.com',
+    barCollapsingEnabled: false, // ← required when activityButton is set
+    preferredControlTintColor: '#FF3B30',
+    activityButton: bookmarkBtn,
+})
+
+browser.open()
 ```
 
 ---
@@ -360,13 +401,13 @@ browser.open({ modal: true });
 
 `AuthSession` wraps `ASWebAuthenticationSession` — Apple's secure API for OAuth and SSO flows. It opens a one-time browser session that shares Safari's cookies (so users already logged into Google, Apple, or other providers won't need to log in again), without giving the host app access to the session data.
 
-> ⚠️ **Important:** Keep a strong reference to the `AuthSession` proxy. If it is garbage collected, the session is automatically cancelled.
+> ⚠️ **Keep a strong reference** to the `AuthSession` proxy. If it is garbage collected, the session is automatically cancelled.
 
 ### AuthSession Properties
 
 #### `url` · String · **required**
 
-The full OAuth/SSO authorization URL, including all query parameters (`client_id`, `redirect_uri`, `scope`, `state`, etc.).
+The full OAuth/SSO authorization URL, including all query parameters.
 
 ```javascript
 const authSession = SafariView.createAuthSession({
@@ -377,16 +418,14 @@ const authSession = SafariView.createAuthSession({
         'scope=email profile',
         'state=RANDOM_STATE_TOKEN',
     ].join('&'),
-});
+})
 ```
 
 ---
 
 #### `callbackURLScheme` · String · **required**
 
-The custom URL scheme your app is registered to handle. This is the scheme part of your `redirect_uri` (e.g. if your redirect URI is `myapp://oauth/callback`, the scheme is `myapp`).
-
-Register the scheme in your `tiapp.xml`:
+The custom URL scheme your app is registered to handle. Register it in `tiapp.xml`:
 
 ```xml
 <ios>
@@ -410,23 +449,23 @@ Register the scheme in your `tiapp.xml`:
 const authSession = SafariView.createAuthSession({
     url: 'https://...',
     callbackURLScheme: 'myapp',
-});
+})
 ```
 
 ---
 
 #### `prefersEphemeralWebBrowserSession` · Boolean · default: `false`
 
-When `false` (default), the session shares cookies with Safari — users already logged in elsewhere won't need to log in again.
+When `false` (default), the session shares cookies with Safari — users already logged in won't need to log in again.
 
-When `true`, the session runs in a private/incognito context with no shared cookies. Useful when you want to force a fresh login regardless of existing sessions.
+When `true`, the session runs in a private context with no shared cookies, forcing a fresh login regardless of existing sessions.
 
 ```javascript
 const authSession = SafariView.createAuthSession({
     url: 'https://...',
     callbackURLScheme: 'myapp',
-    prefersEphemeralWebBrowserSession: true, // force fresh login
-});
+    prefersEphemeralWebBrowserSession: true,
+})
 ```
 
 ---
@@ -435,20 +474,18 @@ const authSession = SafariView.createAuthSession({
 
 #### `start()`
 
-Starts the authentication session. Displays the browser and begins the flow.
+Starts the authentication session.
 
 ```javascript
-authSession.start();
+authSession.start()
 ```
-
----
 
 #### `cancel()`
 
-Cancels the session while it is in progress. Triggers the `complete` event with `cancelled: true`.
+Cancels the session while in progress. Triggers the `complete` event with `cancelled: true`.
 
 ```javascript
-authSession.cancel();
+authSession.cancel()
 ```
 
 ---
@@ -457,7 +494,7 @@ authSession.cancel();
 
 #### `complete`
 
-Fired when the session finishes — whether successfully, cancelled by the user, or with an error.
+Fired when the session finishes — successfully, cancelled, or with an error.
 
 | Property | Type | Description |
 |---|---|---|
@@ -471,14 +508,14 @@ Fired when the session finishes — whether successfully, cancelled by the user,
 authSession.addEventListener('complete', e => {
     if (e.success) {
         const { code, state } = e.queryParams
-        Ti.API.info('Authorization code: ' + code);
-        // Exchange `code` for an access token in your backend
+        // Verify `state`, then exchange `code` for tokens in your backend
+        exchangeCodeForToken(code)
     } else if (e.cancelled) {
-        Ti.API.info('User cancelled login');
+        Ti.API.info('User cancelled login')
     } else {
-        Ti.API.error('Auth error: ' + e.error);
+        Ti.API.error('Auth error: ' + e.error)
     }
-});
+})
 ```
 
 ---
@@ -487,25 +524,28 @@ authSession.addEventListener('complete', e => {
 
 ### Dismiss Button Style
 
-Used with the `dismissButtonStyle` property on `SafariView`.
-
-| Constant | Value | Button Label |
+| Constant | Value | Button label |
 |---|---|---|
 | `DISMISS_BUTTON_STYLE_DONE` | `0` | Done |
 | `DISMISS_BUTTON_STYLE_CLOSE` | `1` | Close |
 | `DISMISS_BUTTON_STYLE_CANCEL` | `2` | Cancel |
 
+### Modal Presentation Style
+
+| Constant | Value |
+|---|---|
+| `MODAL_PRESENTATION_FULL_SCREEN` | `0` |
+| `MODAL_PRESENTATION_PAGE_SHEET` | `1` |
+| `MODAL_PRESENTATION_FORM_SHEET` | `2` |
+| `MODAL_PRESENTATION_CURRENT_CONTEXT` | `3` |
+| `MODAL_PRESENTATION_OVER_FULL_SCREEN` | `5` |
+| `MODAL_PRESENTATION_OVER_CURRENT_CONTEXT` | `6` |
+
 ---
 
 ## API Reference
 
-### Module Methods
-
-#### `createSafariView(config)` → `TiSafariviewSafariViewProxy`
-
-Creates a new browser window backed by `SFSafariViewController`. Extends `TiWindowProxy` — open it like any Titanium Window.
-
-**Config options:**
+### `createSafariView(config)` → `TiSafariviewSafariViewProxy`
 
 | Property | Type | Default | Required |
 |---|---|---|---|
@@ -515,17 +555,16 @@ Creates a new browser window backed by `SFSafariViewController`. Extends `TiWind
 | `preferredBarTintColor` | String | system default | |
 | `preferredControlTintColor` | String | system default | |
 | `dismissButtonStyle` | Int (constant) | `DISMISS_BUTTON_STYLE_DONE` | |
-| + all `Ti.UI.Window` properties | | | |
+| `modalPresentationStyle` | Int (constant) | `MODAL_PRESENTATION_FULL_SCREEN` | |
+| `activityButton` | TiViewProxy | — | |
 
-**Events:** `open`, `close`, `load`, `redirect`
+**Methods:** `open()`, `close()`
+
+**Events:** `open`, `close { userInitiated }`, `load { success }`, `redirect { url }`
 
 ---
 
-#### `createAuthSession(config)` → `TiSafariviewAuthSessionProxy`
-
-Creates a new `ASWebAuthenticationSession` for OAuth and SSO flows.
-
-**Config options:**
+### `createAuthSession(config)` → `TiSafariviewAuthSessionProxy`
 
 | Property | Type | Default | Required |
 |---|---|---|---|
@@ -535,7 +574,7 @@ Creates a new `ASWebAuthenticationSession` for OAuth and SSO flows.
 
 **Methods:** `start()`, `cancel()`
 
-**Events:** `complete`
+**Events:** `complete { success, cancelled, callbackURL, queryParams, error }`
 
 ---
 
@@ -545,49 +584,75 @@ Creates a new `ASWebAuthenticationSession` for OAuth and SSO flows.
 const SafariView = require('ti.safariview')
 
 // ─────────────────────────────────────────────
-// Example 1: In-app browser (page sheet style)
+// Example 1: Full screen browser with bookmark button
 // ─────────────────────────────────────────────
+
+const bookmarkBtn = Ti.UI.createButton({
+    image: '/images/bookmark.png',
+    width: 52,
+    height: 52,
+    bottom: 20,
+    right: 20,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 26,
+})
+
+bookmarkBtn.addEventListener('click', () => {
+    saveBookmark(browser.url)
+    bookmarkBtn.image = '/images/bookmark_filled.png'
+})
 
 const browser = SafariView.createSafariView({
     url: 'https://example.com',
     entersReaderIfAvailable: false,
-    barCollapsingEnabled: true,
+    barCollapsingEnabled: false,      // ← required when activityButton is set
     preferredBarTintColor: Ti.UI.fetchSemanticColor('navigationBarColor'),
     preferredControlTintColor: '#FF3B30',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
+    activityButton: bookmarkBtn,
 })
 
-browser.addEventListener('open',     ()  => Ti.API.info('Browser opened'))
-browser.addEventListener('load',      e  => Ti.API.info('Load success: ' + e.success))
-browser.addEventListener('redirect',  e  => Ti.API.info('Redirected to: ' + e.url))
-browser.addEventListener('close',     e  => Ti.API.info('Closed. User initiated: ' + e.userInitiated))
+browser.addEventListener('open', ()  => Ti.API.info('Browser opened'))
+browser.addEventListener('load', e  => Ti.API.info('Load success: ' + e.success))
+browser.addEventListener('redirect', e  => Ti.API.info('Redirected to: ' + e.url))
+browser.addEventListener('close', e  => Ti.API.info('Closed. User initiated: ' + e.userInitiated))
 
-browser.open({
-    modal: true,
-    modalTransitionStyle: Ti.UI.iOS.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
-    modalStyle: Ti.UI.iOS.MODAL_PRESENTATION_FORMSHEET,
-})
+browser.open()
 
 
 // ─────────────────────────────────────────────
-// Example 2: Full screen browser
+// Example 2: Page Sheet (swipe to dismiss)
 // ─────────────────────────────────────────────
 
-const fullscreenBrowser = SafariView.createSafariView({
+const sheet = SafariView.createSafariView({
     url: 'https://example.com',
-    navBarHidden: true,
-    fullscreen: true,
-    backgroundColor: '#000000',
+    modalPresentationStyle: SafariView.MODAL_PRESENTATION_PAGE_SHEET,
+    preferredBarTintColor: '#1C1C1E',
+    preferredControlTintColor: '#007AFF',
+    dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_CLOSE,
+})
+
+sheet.open()
+
+
+// ─────────────────────────────────────────────
+// Example 3: Full screen with bar collapsing
+// ─────────────────────────────────────────────
+
+const fullscreen = SafariView.createSafariView({
+    url: 'https://example.com/article',
+    entersReaderIfAvailable: true,
+    barCollapsingEnabled: true,       // works because default is FULL_SCREEN
     preferredBarTintColor: '#000000',
     preferredControlTintColor: '#FFFFFF',
     dismissButtonStyle: SafariView.DISMISS_BUTTON_STYLE_DONE,
 })
 
-fullscreenBrowser.open({ modal: true })
+fullscreen.open()
 
 
 // ─────────────────────────────────────────────
-// Example 3: Google OAuth flow
+// Example 4: Google OAuth flow
 // ─────────────────────────────────────────────
 
 const authSession = SafariView.createAuthSession({
@@ -606,7 +671,6 @@ const authSession = SafariView.createAuthSession({
 authSession.addEventListener('complete', e => {
     if (e.success) {
         const { code, state } = e.queryParams
-        // Verify `state`, then exchange `code` for tokens in your backend
         exchangeCodeForToken(code)
     } else if (e.cancelled) {
         Ti.API.info('User cancelled login')
@@ -617,6 +681,16 @@ authSession.addEventListener('complete', e => {
 
 authSession.start()
 ```
+
+---
+
+## Known Limitations
+
+- **Bar collapsing event**: There is no delegate callback for when bars collapse/expand. This is intentional — iOS manages it internally.
+- **Current URL**: The host app cannot read the URL the user is currently viewing. `SFSafariViewController` only exposes the initial URL and redirect events, by design.
+- **Dismiss button**: Only three text labels are available (`Done`, `Close`, `Cancel`). SF Symbols or custom icons are not supported by Apple.
+- **Bar collapsing + activityButton**: Use `barCollapsingEnabled: false` whenever an `activityButton` is present, since the button cannot respond to bar collapse events.
+- **Android**: This module is iOS only. For Android, consider using Chrome Custom Tabs.
 
 ---
 
